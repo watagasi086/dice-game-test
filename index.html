@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DICE BATTLE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="game">
+
+  <section id="setupScreen" class="screen">
+    <h1>🎲 DICE BATTLE</h1>
+    <p class="subtitle">6面それぞれに技を装備しよう</p>
+
+    <div class="setup-status">
+      <div><span>HP</span><strong id="setupHp">60</strong> / 60</div>
+      <div><span>残りコスト</span><strong id="remainingCost">0</strong></div>
+    </div>
+
+    <div class="dice-loadout">
+      <h2>あなたのサイコロ</h2>
+      <div id="loadout"></div>
+    </div>
+
+    <div class="skill-shop">
+      <h2>技一覧</h2>
+      <p class="hint">各面に技を1つ装備。強い技ほどHPを消費する。同じ技を何個の面に装備してもOK。</p>
+      <div id="skillCatalog"></div>
+    </div>
+
+    <button id="startButton" class="primary">この構成でバトル開始</button>
+  </section>
+
+  <section id="battleScreen" class="screen hidden">
+    <h1>⚔️ BATTLE</h1>
+
+    <section class="status">
+      <div class="fighter enemy">
+        <h2>相手</h2>
+        <div class="hpbar"><div id="enemyHpBar"></div></div>
+        <p><span id="enemyHp">60</span> / 60 HP</p>
+      </div>
+
+      <div class="fighter player">
+        <h2>あなた</h2>
+        <div class="hpbar"><div id="playerHpBar"></div></div>
+        <p><span id="playerHp">60</span> / 60 HP</p>
+      </div>
+    </section>
+
+    <section class="loadout-summary">
+      <h2>あなたのサイコロ</h2>
+      <div id="battleLoadout"></div>
+    </section>
+
+    <section class="dice-area">
+      <div id="dice" class="dice">?</div>
+      <div id="rolledSkill" class="rolled-skill">サイコロを振ろう</div>
+      <button id="rollButton" class="primary">サイコロを振る</button>
+      <p id="result">出目によって装備した技が発動する！</p>
+    </section>
+
+    <section class="log">
+      <h2>バトルログ</h2>
+      <div id="log"></div>
+    </section>
+
+    <button id="backButton" class="secondary">技構成に戻る</button>
+  </section>
+
+</main>
+<script src="script.js"></script>
+</body>
+</html>
