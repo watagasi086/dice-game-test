@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dice Battle Prototype</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <h1>🎲 DICE BATTLE</h1>
+
+    <section class="status">
+      <div class="fighter enemy">
+        <h2>相手</h2>
+        <div class="hpbar"><div id="enemyHpBar"></div></div>
+        <p><span id="enemyHp">60</span> / 60 HP</p>
+      </div>
+
+      <div class="fighter player">
+        <h2>あなた</h2>
+        <div class="hpbar"><div id="playerHpBar"></div></div>
+        <p><span id="playerHp">60</span> / 60 HP</p>
+      </div>
+    </section>
+
+    <section class="dice-area">
+      <div id="dice" class="dice">?</div>
+      <button id="rollButton">サイコロを振る</button>
+      <p id="result">1〜6の出目で行動が決まる！</p>
+    </section>
+
+    <section class="skills">
+      <h2>技を選ぶ</h2>
+      <div id="skillList"></div>
+    </section>
+
+    <section class="log">
+      <h2>バトルログ</h2>
+      <div id="log"></div>
+    </section>
+
+    <button id="resetButton" class="reset">リセット</button>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
