@@ -29,10 +29,10 @@ header {
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 14px 16px;
+  padding: 6px 12px;
   text-align: center;
   background: linear-gradient(135deg, #3478df, #7256d8);
-  box-shadow: 0 4px 18px #0004;
+  box-shadow: 0 4px 12px #0004;
 }
 
 header.setup-mode {
@@ -45,20 +45,22 @@ header.battle-mode {
 
 header h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 19px;
+  line-height: 1.4;
 }
 
 header p {
-  margin: 2px 0 0;
-  font-size: 13px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
   opacity: 0.9;
 }
 
 .version {
   position: absolute;
-  top: 8px;
-  left: 10px;
-  font-size: 11px;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
   opacity: 0.85;
 }
 
