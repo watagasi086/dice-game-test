@@ -12,8 +12,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, #292e46 0, #151721 58%);
+  background: radial-gradient(circle at top, #292e46 0, #151721 58%);
 }
 
 button {
@@ -22,32 +21,68 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+.hidden {
+  display: none !important;
+}
+
+/* 上部固定ヘッダー */
 .game-header {
-  padding: 10px 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  background: rgba(21, 23, 33, 0.97);
+  border-bottom: 1px solid #3b425b;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.header-inner {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .version {
-  display: inline-block;
+  flex: 0 0 auto;
   color: #c8cde2;
   background: #292e40;
   border: 1px solid #454c67;
   border-radius: 8px;
-  padding: 5px 10px;
+  padding: 5px 9px;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.setup-hp {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: #202435;
+  border: 1px solid #3b425b;
+}
+
+.setup-mode .setup-hp {
+  display: block;
+}
+
+.game-header.battle-mode .setup-hp {
+  display: none;
 }
 
 main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 10px 16px 30px;
+  padding: 12px 16px 30px;
 }
 
 .screen h1 {
-  margin: 12px 0 8px;
+  margin: 8px 0;
   font-size: clamp(24px, 4vw, 34px);
   text-align: center;
 }
@@ -58,30 +93,17 @@ main {
   margin: 0 0 18px;
 }
 
-.hidden {
-  display: none !important;
-}
-
-.setup-hp {
-  max-width: 600px;
-  margin: 0 auto 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #202435;
-  border: 1px solid #3b425b;
-}
-
 .hp-label {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
 }
 
 .hp-track {
-  height: 12px;
+  height: 11px;
   background: #414354;
   border-radius: 999px;
   overflow: hidden;
@@ -187,14 +209,13 @@ main {
   border-radius: 10px;
   border: 2px solid #454d6b;
   background: #292e43;
-  color: #fff;
+  color: white;
   text-align: center;
 }
 
 .slot.selected {
   border-color: #ffd166;
   background: #423b35;
-  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.13);
 }
 
 .slot-number {
@@ -251,15 +272,6 @@ main {
   background: #423b35;
 }
 
-.owned-skill:disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
-}
-
-.owned-skill .skill-name {
-  font-size: 13px;
-}
-
 .owned-count {
   display: block;
   color: #b8bfd4;
@@ -283,9 +295,9 @@ main {
   box-shadow: 0 4px 0 #ad7132;
 }
 
-.primary-button:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #ad7132;
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .secondary-button {
@@ -354,7 +366,8 @@ main {
   overflow-wrap: anywhere;
 }
 
-.battle-skills-panel {
+.battle-skills-panel,
+.log-panel {
   margin-top: 14px;
 }
 
@@ -372,15 +385,18 @@ main {
   text-align: center;
 }
 
-.battle-skill strong {
+.battle-skill strong,
+.battle-skill span {
   display: block;
+}
+
+.battle-skill strong {
   font-size: 11px;
   color: #aeb7d3;
   margin-bottom: 4px;
 }
 
 .battle-skill span {
-  display: block;
   font-size: 12px;
   font-weight: 800;
   overflow-wrap: anywhere;
@@ -389,10 +405,6 @@ main {
 .roll-button {
   font-size: 18px;
   margin: 18px 0 4px;
-}
-
-.log-panel {
-  margin-top: 14px;
 }
 
 .battle-log {
@@ -411,15 +423,11 @@ main {
 
 @media (max-width: 700px) {
   main {
-    padding: 8px 10px 20px;
+    padding: 10px 10px 20px;
   }
 
   .setup-layout {
     grid-template-columns: 1fr;
-  }
-
-  .setup-layout h2 {
-    font-size: 17px;
   }
 
   .panel {
@@ -440,14 +448,26 @@ main {
   }
 }
 
-/* スマホ横向きでは準備画面を左右に配置 */
 @media (max-width: 900px) and (orientation: landscape) {
-  main {
-    padding: 6px 10px 18px;
+  .header-inner {
+    padding: 5px 10px;
   }
 
-  .game-header {
-    padding-top: 6px;
+  .setup-hp {
+    padding: 5px 9px;
+  }
+
+  .hp-label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .hp-track {
+    height: 8px;
+  }
+
+  main {
+    padding: 6px 10px 18px;
   }
 
   .screen h1 {
@@ -458,11 +478,6 @@ main {
   .description {
     font-size: 12px;
     margin-bottom: 10px;
-  }
-
-  .setup-hp {
-    padding: 8px 12px;
-    margin-bottom: 8px;
   }
 
   .setup-layout {
@@ -514,29 +529,23 @@ main {
     margin: 8px 0;
   }
 
-  .battle-board {
-    gap: 8px;
-  }
-
   .die {
     font-size: 36px;
     min-height: 42px;
   }
-
-  .battle-skills-panel {
-    margin-top: 8px;
-  }
-
-  .roll-button {
-    margin-top: 10px;
-  }
-
-  .log-panel {
-    margin-top: 8px;
-  }
 }
 
 @media (max-width: 480px) and (orientation: portrait) {
+  .header-inner {
+    padding: 7px 9px;
+    gap: 8px;
+  }
+
+  .version {
+    font-size: 11px;
+    padding: 5px 7px;
+  }
+
   .screen h1 {
     font-size: 24px;
   }
