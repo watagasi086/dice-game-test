@@ -4,161 +4,178 @@
 }
 
 :root {
+  color-scheme: dark;
   --bg: #101522;
   --panel: #1b2435;
-  --panel-light: #263249;
-  --text: #f3f5fa;
-  --muted: #aab5c8;
-  --accent: #69a7ff;
+  --panel-light: #253149;
+  --text: #f1f5ff;
+  --muted: #a8b4ca;
   --green: #4bd69a;
+  --blue: #70a7ff;
   --red: #ff6b79;
-  --border: #34435c;
+  --border: #35425a;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  line-height: 1.5;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
 }
 
-button {
-  font: inherit;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.game-header {
+header {
   position: sticky;
   top: 0;
-  z-index: 1000;
-  background: rgba(16, 21, 34, 0.97);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(10px);
+  z-index: 10;
+  padding: 14px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, #3478df, #7256d8);
+  box-shadow: 0 4px 18px #0004;
 }
 
-.header-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
+header.setup-mode {
+  background: linear-gradient(135deg, #267e70, #3478df);
+}
+
+header.battle-mode {
+  background: linear-gradient(135deg, #a84955, #7256d8);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+header p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
 }
 
 .version {
-  flex-shrink: 0;
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+main {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.panel {
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 5px 16px #0002;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+p {
+  margin-top: 6px;
+}
+
+.hint {
   color: var(--muted);
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.setup-hp {
-  display: block;
-  flex: 1;
-  min-width: 0;
-}
-
-.game-header.battle-mode .setup-hp {
-  display: none;
-}
-
-.hp-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
   font-size: 13px;
 }
 
-.hp-track {
-  height: 12px;
+.hp-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hp-container > span {
+  min-width: 84px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.hp-bar {
+  flex: 1;
+  height: 18px;
   overflow: hidden;
-  background: #343b4b;
   border-radius: 20px;
+  background: #080d17;
 }
 
 .hp-fill {
-  height: 100%;
   width: 100%;
+  height: 100%;
+  border-radius: inherit;
   background: var(--green);
-  border-radius: 20px;
-  transition: width 0.25s ease;
+  transition: width 0.25s ease, background 0.25s ease;
 }
 
 .enemy-fill {
   background: var(--red);
 }
 
-main {
-  width: min(1100px, 100%);
-  margin: 0 auto;
-  padding: 20px 16px 40px;
-}
-
-h1 {
-  margin: 8px 0;
-  text-align: center;
-  font-size: clamp(26px, 5vw, 36px);
-}
-
-h2 {
-  margin: 0 0 12px;
-  font-size: 20px;
-}
-
-h3 {
-  margin: 22px 0 10px;
-  font-size: 16px;
-}
-
-.description {
-  text-align: center;
-  color: var(--muted);
-  margin: 8px 0 24px;
-}
-
-.subtext {
-  margin: -5px 0 14px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.setup-layout {
+.choice-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.panel {
-  min-width: 0;
-  padding: 18px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  margin-bottom: 16px;
+.choice {
+  cursor: pointer;
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+}
+
+.choice span {
+  display: block;
+  padding: 12px 8px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+  background: var(--panel-light);
+  font-weight: bold;
+}
+
+.choice input:checked + span {
+  border-color: var(--blue);
+  background: #29436a;
+}
+
+.choice input:focus-visible + span {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+
+.shop-list,
+.owned-list {
+  display: grid;
+  gap: 10px;
 }
 
 .skill-item,
 .owned-skill {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 11px;
-  margin-bottom: 8px;
-  background: var(--panel-light);
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
+  background: #151e2d;
 }
 
 .skill-info {
@@ -174,255 +191,189 @@ h3 {
   font-size: 12px;
 }
 
+button {
+  font: inherit;
+}
+
 .small-button {
   flex-shrink: 0;
   padding: 8px 12px;
+  border: 1px solid #5575a8;
+  border-radius: 9px;
   color: white;
-  background: #354966;
-  border: 0;
-  border-radius: 8px;
-  font-weight: bold;
+  background: #34558a;
+  cursor: pointer;
 }
 
-.small-button:not(:disabled):active {
-  transform: scale(0.97);
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .battle-slots {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .slot {
-  min-width: 0;
   min-height: 78px;
-  padding: 8px 4px;
-  color: var(--text);
-  background: #141c2a;
+  padding: 10px;
   border: 2px solid var(--border);
-  border-radius: 10px;
-  overflow-wrap: anywhere;
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel-light);
+  cursor: pointer;
 }
 
 .slot.selected {
-  border-color: var(--accent);
-  background: #203653;
+  border-color: var(--blue);
+  background: #29436a;
+}
+
+.slot-number,
+.slot-skill {
+  display: block;
 }
 
 .slot-number {
-  display: block;
-  margin-bottom: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .slot-skill {
-  display: block;
-  font-size: 13px;
   font-weight: bold;
 }
 
 .selected-text {
-  min-height: 24px;
-  margin: 12px 0;
-  color: var(--accent);
+  margin: 14px 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: #131b29;
+  color: var(--muted);
   font-size: 13px;
-}
-
-.owned-skill {
-  padding: 8px;
-}
-
-.owned-skill .small-button {
-  padding: 7px 9px;
 }
 
 .primary-button,
 .secondary-button {
-  width: 100%;
   display: block;
-  padding: 14px 16px;
-  margin: 14px 0;
+  width: 100%;
+  margin: 12px 0;
+  padding: 14px;
   border: 0;
   border-radius: 12px;
+  color: white;
   font-size: 16px;
   font-weight: bold;
+  cursor: pointer;
 }
 
 .primary-button {
-  color: #081324;
-  background: var(--accent);
-}
-
-.primary-button:not(:disabled):active {
-  transform: scale(0.99);
-  filter: brightness(0.92);
+  background: linear-gradient(135deg, #3478df, #7256d8);
 }
 
 .secondary-button {
-  color: var(--text);
-  background: #35435b;
+  background: #3c485d;
 }
 
-.battle-status {
+.turn-panel {
+  text-align: center;
+}
+
+#turnStatus {
+  color: #9bc1ff;
+}
+
+#turnDescription {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.dice-area {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
   margin: 20px 0;
 }
 
-.fighter-card {
-  min-width: 0;
+.dice-box {
   padding: 14px;
-  text-align: center;
-  background: var(--panel);
-  border: 1px solid var(--border);
   border-radius: 14px;
+  background: #121a28;
 }
 
-.fighter-card h2 {
-  margin-bottom: 12px;
-}
-
-.fighter-card .hp-label {
-  font-size: 12px;
+.dice-box > span {
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .die {
-  width: 76px;
-  height: 76px;
   display: grid;
   place-items: center;
-  margin: 16px auto 8px;
-  color: #172033;
-  background: white;
+  width: 76px;
+  height: 76px;
+  margin: 10px auto 0;
+  border: 2px solid var(--border);
   border-radius: 16px;
+  background: #f6f7fb;
+  color: #172033;
   font-size: 36px;
   font-weight: 900;
-  box-shadow: 0 5px 0 #c6cede;
-}
-
-.fighter-card p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.vs {
-  color: #ffcf70;
-  font-size: 18px;
-  font-weight: 900;
-}
-
-.battle-skills-panel {
-  margin-top: 12px;
 }
 
 .battle-skill-display {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  margin: 16px 0;
 }
 
 .battle-skill {
-  padding: 10px 5px;
-  text-align: center;
-  background: var(--panel-light);
+  padding: 9px 5px;
   border: 1px solid var(--border);
   border-radius: 9px;
+  color: var(--muted);
   font-size: 12px;
-  overflow-wrap: anywhere;
+  background: #141c2a;
 }
 
 .battle-skill.active {
-  border-color: #ffcf70;
-  background: #4a3b26;
+  border-color: var(--green);
+  color: white;
+  background: #205444;
 }
 
 .battle-log {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   max-height: 260px;
   overflow-y: auto;
-  color: #dce4f1;
-  font-size: 14px;
-  white-space: pre-wrap;
+  padding: 12px;
+  border-radius: 10px;
+  background: #111824;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .log-entry {
-  padding: 8px 10px;
-  background: #141c2a;
-  border-radius: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #283246;
+  font-size: 13px;
 }
 
 .hidden {
   display: none !important;
 }
 
-@media (max-width: 700px) {
-  main {
-    padding: 14px 12px 30px;
-  }
-
-  .setup-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .panel {
-    padding: 14px;
-  }
-
-  .header-inner {
-    padding: 9px 12px;
-    gap: 12px;
-  }
-
-  .battle-status {
-    gap: 7px;
-  }
-
-  .fighter-card {
-    padding: 10px 7px;
-  }
-
-  .die {
-    width: 62px;
-    height: 62px;
-    border-radius: 12px;
-    font-size: 30px;
-  }
-
-  .vs {
-    font-size: 14px;
+@media (min-width: 600px) {
+  .shop-list,
+  .owned-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .battle-slots {
-    gap: 6px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .slot {
-    min-height: 72px;
-  }
-}
-
-@media (max-width: 380px) {
-  .hp-label {
-    font-size: 11px;
-  }
-
-  .slot-skill {
-    font-size: 11px;
-  }
-
-  .skill-item {
-    padding: 8px;
-  }
-
-  .small-button {
-    padding: 7px 8px;
-    font-size: 12px;
+  .battle-skill-display {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
