@@ -38,7 +38,6 @@ let selectedSlotIndex = null;
 let battleFinished = false;
 let battleLogEntries = [];
 
-// 先攻後攻システム
 let firstTurn = "player";
 let currentTurn = "player";
 let enemyActionPending = false;
@@ -152,8 +151,6 @@ function renderShop() {
       button.disabled = true;
     } else {
       button.textContent = "購入";
-
-      // 購入後にHPが0になる場合は買えない
       button.disabled = playerHp <= skill.cost;
 
       button.addEventListener("click", () => {
@@ -343,18 +340,33 @@ function updateSelectedText() {
 
 // ==============================
 // 敵の技購入システム
+// 開始時HPは必ず51以上
 // ==============================
 
 function generateEnemyLoadout() {
   let remainingHp = MAX_HP;
   const newLoadout = [];
 
+  // 購入後もHP51以上を残せる技だけ候補にする
   function getAffordableSkills() {
-    return skills.filter(skill => skill.cost < remainingHp);
+    return skills.filter(
+      skill => remainingHp - skill.cost >= 51
+    );
   }
 
   function buyRandomSkill() {
     const affordable = getAffordableSkills();
+
+    // 候補がない場合は無料技を入れる
+    if (affordable.length === 0) {
+      const freeSkills = skills.filter(skill => skill.cost === 0);
+      const skill =
+        freeSkills[Math.floor(Math.random() * freeSkills.length)];
+
+      newLoadout.push(skill.id);
+      return;
+    }
+
     const skill =
       affordable[Math.floor(Math.random() * affordable.length)];
 
@@ -362,17 +374,22 @@ function generateEnemyLoadout() {
     newLoadout.push(skill.id);
   }
 
-  // 最低1つは攻撃技を入れる
-  const attacks = skills.filter(
-    skill => skill.type === "damage" && skill.cost < remainingHp
+  // 最低1つは攻撃技を確保
+  const affordableAttacks = skills.filter(
+    skill =>
+      skill.type === "damage" &&
+      remainingHp - skill.cost >= 51
   );
 
   const firstAttack =
-    attacks[Math.floor(Math.random() * attacks.length)];
+    affordableAttacks[
+      Math.floor(Math.random() * affordableAttacks.length)
+    ];
 
   remainingHp -= firstAttack.cost;
   newLoadout.push(firstAttack.id);
 
+  // 残り5枠を選択
   while (newLoadout.length < 6) {
     buyRandomSkill();
   }
@@ -387,7 +404,7 @@ function generateEnemyLoadout() {
 }
 
 // ==============================
-// バトル画面・HP表示
+// バトル画面
 // ==============================
 
 function renderBattleSkillDisplay(activeIndex = -1) {
@@ -456,19 +473,16 @@ function startBattle() {
     return;
   }
 
-  // 敵が技を購入する
   generateEnemyLoadout();
 
   battleFinished = false;
   enemyActionPending = false;
   battleLogEntries = [];
 
-  // 選んだ奇数・偶数を取得
   const choice = document.querySelector(
     'input[name="parityChoice"]:checked'
   ).value;
 
-  // 判定用ダイス
   const parityRoll = rollDie();
   const result = parityRoll % 2 === 0 ? "even" : "odd";
   const isCorrect = choice === result;
@@ -516,8 +530,8 @@ function startBattle() {
     setEnemyTurn();
     enemyActionPending = true;
 
-    // 敵が先攻なら自動で行動
     rollButton.disabled = true;
+
     setTimeout(() => {
       enemyActionPending = false;
       enemyTurn();
@@ -561,7 +575,6 @@ function useSkill(side, skill, roll) {
   const targetName = isPlayer ? "敵" : "あなた";
 
   const oldHp = isPlayer ? playerHp : enemyHp;
-  const targetOldHp = isPlayer ? enemyHp : playerHp;
 
   if (isPlayer) {
     playerDie.textContent = roll;
@@ -591,14 +604,13 @@ function useSkill(side, skill, roll) {
 
   updateBattleHp();
 
-  // 倒されたら後攻側は行動しない
+  // HPが0になったら即終了
   if (playerHp <= 0 || enemyHp <= 0) {
     finishBattle();
     return;
   }
 
   if (isPlayer) {
-    // プレイヤーの行動後、敵が自動で行動する
     setEnemyTurn();
     enemyActionPending = true;
 
@@ -607,7 +619,6 @@ function useSkill(side, skill, roll) {
       enemyTurn();
     }, 700);
   } else {
-    // 敵の行動後、プレイヤーのターンへ
     addLog("あなたのターン！");
     setPlayerTurn();
   }
