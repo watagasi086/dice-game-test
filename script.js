@@ -1,6 +1,5 @@
 
 const MAX_HP = 100;
-const VERSION = "1.4";
 
 const skills = [
   { id: "atk5", name: "小攻撃", type: "damage", value: 5, cost: 0 },
@@ -16,20 +15,14 @@ const skills = [
   { id: "heal40", name: "超回復", type: "heal", value: 40, cost: 40 }
 ];
 
-// 初期装備は小攻撃3個、小回復3個
 const INITIAL_COUNTS = {
   atk5: 3,
   heal5: 3
 };
 
-// 相手の装備
 const enemyLoadout = [
-  "atk5",
-  "atk10",
-  "atk20",
-  "heal5",
-  "heal10",
-  "heal20"
+  "atk5", "atk10", "atk20",
+  "heal5", "heal10", "heal20"
 ];
 
 let playerHp = MAX_HP;
@@ -37,12 +30,8 @@ let enemyHp = MAX_HP;
 
 let inventory = { ...INITIAL_COUNTS };
 let loadout = [
-  "atk5",
-  "atk5",
-  "atk5",
-  "heal5",
-  "heal5",
-  "heal5"
+  "atk5", "atk5", "atk5",
+  "heal5", "heal5", "heal5"
 ];
 
 let selectedSkillId = null;
@@ -50,6 +39,7 @@ let selectedSlotIndex = null;
 let battleFinished = false;
 let battleLogEntries = [];
 
+const gameHeader = document.getElementById("gameHeader");
 const setupScreen = document.getElementById("setupScreen");
 const battleScreen = document.getElementById("battleScreen");
 
@@ -91,33 +81,30 @@ function getEquippedCount(id) {
 }
 
 function getAvailableCount(id) {
-  return Math.max(0, getInventoryCount(id) - getEquippedCount(id));
+  return Math.max(
+    0,
+    getInventoryCount(id) - getEquippedCount(id)
+  );
 }
 
 function getEffectText(skill) {
-  if (skill.type === "damage") {
-    return `${skill.value}ダメージ`;
-  }
-
-  return `${skill.value}回復`;
+  return skill.type === "damage"
+    ? `${skill.value}ダメージ`
+    : `${skill.value}回復`;
 }
 
-function getSkillDetail(skill) {
-  return `${getEffectText(skill)} / 購入${skill.cost}HP`;
-}
-
+/* 準備画面のHP */
 function updateSetupHp() {
   setupHpText.textContent = `${playerHp} / ${MAX_HP}`;
-  setupHpBar.style.width = `${Math.max(0, playerHp) / MAX_HP * 100}%`;
-  startButton.disabled = playerHp <= 0;
+  setupHpBar.style.width =
+    `${Math.max(0, playerHp) / MAX_HP * 100}%`;
 
-  if (playerHp <= 0) {
-    startButton.textContent = "体力が足りない！";
-  } else {
-    startButton.textContent = "バトル開始！";
-  }
+  startButton.disabled = playerHp <= 0;
+  startButton.textContent =
+    playerHp <= 0 ? "体力が足りない！" : "バトル開始！";
 }
 
+/* ショップ */
 function renderShop() {
   shopList.innerHTML = "";
 
@@ -146,7 +133,6 @@ function renderShop() {
     if (skill.cost === 0) {
       button.textContent = "初期技";
       button.disabled = true;
-      button.title = "最初から所持している技です";
     } else {
       button.textContent = `購入 ${skill.cost}HP`;
       button.disabled = playerHp < skill.cost;
@@ -181,17 +167,16 @@ function buySkill(id) {
 
   selectedSkillId = id;
   updateSelectedText();
-
-  alert(`${skill.name}を購入したで！\n残り体力：${playerHp}`);
 }
 
+/* サイコロ装備 */
 function renderSlots() {
   battleSlots.innerHTML = "";
 
   loadout.forEach((skillId, index) => {
     const skill = skillId ? getSkill(skillId) : null;
-
     const button = document.createElement("button");
+
     button.className = "slot";
 
     if (selectedSlotIndex === index) {
@@ -220,12 +205,12 @@ function renderSlots() {
   });
 }
 
+/* 所持技一覧 */
 function renderOwnedSkills() {
   ownedList.innerHTML = "";
 
   skills.forEach(skill => {
     const total = getInventoryCount(skill.id);
-
     if (total <= 0) return;
 
     const available = getAvailableCount(skill.id);
@@ -248,12 +233,11 @@ function renderOwnedSkills() {
 
     const count = document.createElement("span");
     count.className = "owned-count";
-    count.textContent = `所持 ${total}個 / 装備中 ${equipped}個 / 空き ${available}個`;
+    count.textContent =
+      `所持 ${total}個 / 装備中 ${equipped}個 / 空き ${available}個`;
 
     button.append(name, detail, count);
 
-    // すでに装備中の技も選択可能。
-    // 装備枠を移動したいときにも使える。
     button.addEventListener("click", () => {
       selectedSkillId = skill.id;
       updateSelectedText();
@@ -273,13 +257,9 @@ function updateSelectedText() {
 
   const skill = getSkill(selectedSkillId);
 
-  if (!skill) {
-    selectedSkillText.textContent = "装備したい技を選択してな";
-    return;
-  }
-
-  selectedSkillText.textContent =
-    `選択中：${skill.name} → 装備したい枠を押してな`;
+  selectedSkillText.textContent = skill
+    ? `選択中：${skill.name} → 装備したい枠を押してな`
+    : "装備したい技を選択してな";
 }
 
 function handleSlotClick(slotIndex) {
@@ -296,24 +276,20 @@ function handleSlotClick(slotIndex) {
 }
 
 function equipSkill(slotIndex, skillId) {
-  const skill = getSkill(skillId);
-
-  if (!skill || getInventoryCount(skillId) <= 0) {
+  if (getInventoryCount(skillId) <= 0) {
     alert("その技は所持していないで！");
     return;
   }
 
-  // 装備先の枠にある技はいったん外した扱いにする
+  // 選択先の枠をいったん空ける
   const nextLoadout = [...loadout];
   nextLoadout[slotIndex] = null;
 
-  // 装備先以外に同じ技が何個装備されているか確認
-  const equippedElsewhere = nextLoadout.filter(
-    id => id === skillId
-  ).length;
+  // 所持数を超えないよう、必要なら別枠から移動
+  const equippedElsewhere =
+    nextLoadout.filter(id => id === skillId).length;
 
   if (equippedElsewhere >= getInventoryCount(skillId)) {
-    // 所持数が足りなければ、別の枠から同じ技を1個移動する
     const oldIndex = nextLoadout.findIndex(id => id === skillId);
 
     if (oldIndex === -1) {
@@ -326,7 +302,6 @@ function equipSkill(slotIndex, skillId) {
 
   nextLoadout[slotIndex] = skillId;
   loadout = nextLoadout;
-
   selectedSlotIndex = slotIndex;
 
   renderSlots();
@@ -334,11 +309,12 @@ function equipSkill(slotIndex, skillId) {
   updateSelectedText();
 }
 
+/* バトル画面 */
 function renderBattleSkillDisplay() {
   battleSkillDisplay.innerHTML = "";
 
   loadout.forEach((skillId, index) => {
-    const skill = skillId ? getSkill(skillId) : null;
+    const skill = getSkill(skillId);
 
     const item = document.createElement("div");
     item.className = "battle-skill";
@@ -367,16 +343,13 @@ function updateBattleHp() {
 function addLog(message) {
   battleLogEntries.unshift(message);
   battleLogEntries = battleLogEntries.slice(0, 30);
-
   battleLog.innerHTML = "";
 
   battleLogEntries.forEach((entry, index) => {
     const line = document.createElement("div");
     line.textContent = entry;
 
-    if (index === 0) {
-      line.className = "latest";
-    }
+    if (index === 0) line.className = "latest";
 
     battleLog.appendChild(line);
   });
@@ -390,9 +363,7 @@ function applySkill(skill, isPlayer) {
   if (!skill) {
     return {
       text: "未装備",
-      log: isPlayer
-        ? "あなたは技を装備していない！"
-        : "相手は技を装備していない！"
+      log: `${isPlayer ? "あなた" : "相手"}は技を装備していない！`
     };
   }
 
@@ -414,27 +385,25 @@ function applySkill(skill, isPlayer) {
   if (isPlayer) {
     const before = playerHp;
     playerHp = Math.min(MAX_HP, playerHp + skill.value);
-    const healed = playerHp - before;
 
     return {
       text: `${skill.name}！`,
-      log: `あなたの${skill.name}！ HPが${healed}回復！`
+      log: `あなたの${skill.name}！ HPが${playerHp - before}回復！`
     };
   }
 
   const before = enemyHp;
   enemyHp = Math.min(MAX_HP, enemyHp + skill.value);
-  const healed = enemyHp - before;
 
   return {
     text: `${skill.name}！`,
-    log: `相手の${skill.name}！ HPが${healed}回復！`
+    log: `相手の${skill.name}！ HPが${enemyHp - before}回復！`
   };
 }
 
 function startBattle() {
   if (playerHp <= 0) {
-    alert("体力が0やで！準備画面で体力を回復できるようにしてから挑戦しよう。");
+    alert("体力が0やで！");
     return;
   }
 
@@ -447,10 +416,13 @@ function startBattle() {
   battleFinished = false;
   battleLogEntries = [];
 
+  // バトル中は固定の準備用HPバーを隠す
+  gameHeader.classList.remove("setup-mode");
+  gameHeader.classList.add("battle-mode");
+
   setupScreen.classList.add("hidden");
   battleScreen.classList.remove("hidden");
 
-  // バトル画面には準備画面のHPゲージを表示しない
   updateBattleHp();
   renderBattleSkillDisplay();
 
@@ -501,12 +473,8 @@ function takeTurn() {
   playerAction.textContent = playerResult.text;
   enemyAction.textContent = enemyResult.text;
 
-  addLog(
-    `あなた：出目${playerIndex + 1} → ${playerResult.log}`
-  );
-  addLog(
-    `相手：出目${enemyIndex + 1} → ${enemyResult.log}`
-  );
+  addLog(`あなた：出目${playerIndex + 1} → ${playerResult.log}`);
+  addLog(`相手：出目${enemyIndex + 1} → ${enemyResult.log}`);
 
   updateBattleHp();
 
@@ -519,7 +487,10 @@ function returnToSetup() {
   battleScreen.classList.add("hidden");
   setupScreen.classList.remove("hidden");
 
-  // バトルで残ったHPをそのまま準備画面に引き継ぐ
+  // 準備画面に戻ったら固定HPバーを再表示
+  gameHeader.classList.remove("battle-mode");
+  gameHeader.classList.add("setup-mode");
+
   updateSetupHp();
   renderShop();
   renderSlots();
@@ -527,12 +498,10 @@ function returnToSetup() {
   updateSelectedText();
 }
 
-// ボタン操作
 startButton.addEventListener("click", startBattle);
 rollButton.addEventListener("click", takeTurn);
 backButton.addEventListener("click", returnToSetup);
 
-// 初期表示
 updateSetupHp();
 renderShop();
 renderSlots();
