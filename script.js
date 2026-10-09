@@ -15,10 +15,7 @@ const skills = [
   { id: "heal40", name: "超回復", type: "heal", value: 40, cost: 40 }
 ];
 
-const INITIAL_COUNTS = {
-  atk5: 3,
-  heal5: 3
-};
+const INITIAL_COUNTS = { atk5: 3, heal5: 3 };
 
 const INITIAL_LOADOUT = [
   "atk5", "atk5", "atk5",
@@ -26,47 +23,18 @@ const INITIAL_LOADOUT = [
 ];
 
 const enemyAttackSkills = [
-  "atk5", "atk10", "atk20",
-  "atk30", "atk40", "atk50"
+  "atk5", "atk10", "atk20", "atk30", "atk40", "atk50"
 ];
 
 const enemyHealSkills = [
-  "heal5", "heal10", "heal20",
-  "heal30", "heal40"
+  "heal5", "heal10", "heal20", "heal30", "heal40"
 ];
 
 let enemyLoadout = [];
-
-function generateEnemyLoadout() {
-  // 攻撃技を最低1つ保証
-  const firstAttack = enemyAttackSkills[
-    Math.floor(Math.random() * enemyAttackSkills.length)
-  ];
-
-  const result = [firstAttack];
-  const allSkills = [...enemyAttackSkills, ...enemyHealSkills];
-
-  while (result.length < 6) {
-    const skill = allSkills[
-      Math.floor(Math.random() * allSkills.length)
-    ];
-    result.push(skill);
-  }
-
-  // 技の配置もシャッフル
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-
-  return result;
-}
-
 let playerHp = MAX_HP;
 let enemyHp = MAX_HP;
 let inventory = { ...INITIAL_COUNTS };
 let loadout = [...INITIAL_LOADOUT];
-
 let selectedSkillId = null;
 let selectedSlotIndex = null;
 let battleFinished = false;
@@ -92,7 +60,6 @@ const enemyHpBar = document.getElementById("enemyHpBar");
 
 const playerDie = document.getElementById("playerDie");
 const enemyDie = document.getElementById("enemyDie");
-
 const battleSkillDisplay = document.getElementById("battleSkillDisplay");
 const rollButton = document.getElementById("rollButton");
 const battleLog = document.getElementById("battleLog");
@@ -109,14 +76,14 @@ function getSkillDescription(skill) {
 }
 
 function updateSetupHp() {
-  const hp = Math.max(0, Math.min(MAX_HP, playerHp));
+  playerHp = Math.max(0, Math.min(MAX_HP, playerHp));
 
-  setupHpText.textContent = `${hp} / ${MAX_HP}`;
-  setupHpBar.style.width = `${hp / MAX_HP * 100}%`;
+  setupHpText.textContent = `${playerHp} / ${MAX_HP}`;
+  setupHpBar.style.width = `${playerHp}%`;
 
-  if (hp <= 25) {
+  if (playerHp <= 25) {
     setupHpBar.style.background = "#ff6b79";
-  } else if (hp <= 50) {
+  } else if (playerHp <= 50) {
     setupHpBar.style.background = "#ffcf70";
   } else {
     setupHpBar.style.background = "#4bd69a";
@@ -126,11 +93,10 @@ function updateSetupHp() {
 }
 
 function updateStartButton() {
-  const allSlotsFilled =
-    loadout.length === 6 &&
-    loadout.every(id => id !== null && getSkill(id));
-
-  startButton.disabled = playerHp <= 0 || !allSlotsFilled;
+  startButton.disabled =
+    playerHp <= 0 ||
+    loadout.length !== 6 ||
+    loadout.some(id => !getSkill(id));
 }
 
 function renderShop() {
@@ -216,9 +182,7 @@ function renderSlots() {
 
     const name = document.createElement("span");
     name.className = "slot-skill";
-
-    const skill = getSkill(skillId);
-    name.textContent = skill ? skill.name : "空き";
+    name.textContent = getSkill(skillId)?.name || "空き";
 
     button.append(number, name);
 
@@ -296,13 +260,9 @@ function renderOwnedSkills() {
 
 function equipSkill(slotIndex, skillId) {
   if (slotIndex === null || slotIndex < 0 || slotIndex >= 6) return;
+  if (!getSkill(skillId) || loadout[slotIndex] === skillId) return;
 
-  const skill = getSkill(skillId);
-  if (!skill || loadout[slotIndex] === skillId) return;
-
-  const available = getAvailableCount(skillId);
-
-  if (available <= 0) {
+  if (getAvailableCount(skillId) <= 0) {
     const anotherSlot = loadout.findIndex(
       (id, index) => id === skillId && index !== slotIndex
     );
@@ -324,8 +284,7 @@ function equipSkill(slotIndex, skillId) {
 
 function updateSelectedText() {
   if (selectedSlotIndex === null) {
-    selectedSkillText.textContent =
-      "セットするスロットを選んでね。";
+    selectedSkillText.textContent = "セットするスロットを選んでね。";
     return;
   }
 
@@ -336,12 +295,33 @@ function updateSelectedText() {
     : `スロット ${selectedSlotIndex + 1} を選択中`;
 }
 
+function generateEnemyLoadout() {
+  // 攻撃技を最低1つ確保
+  const result = [
+    enemyAttackSkills[
+      Math.floor(Math.random() * enemyAttackSkills.length)
+    ]
+  ];
+
+  const allSkills = [...enemyAttackSkills, ...enemyHealSkills];
+
+  while (result.length < 6) {
+    result.push(allSkills[Math.floor(Math.random() * allSkills.length)]);
+  }
+
+  // 配置をシャッフル
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
 function renderBattleSkillDisplay(activeIndex = -1) {
   battleSkillDisplay.innerHTML = "";
 
   loadout.forEach((skillId, index) => {
-    const skill = getSkill(skillId);
-
     const item = document.createElement("div");
     item.className = "battle-skill";
 
@@ -349,7 +329,7 @@ function renderBattleSkillDisplay(activeIndex = -1) {
       item.classList.add("active");
     }
 
-    item.textContent = `${index + 1}. ${skill ? skill.name : "空き"}`;
+    item.textContent = `${index + 1}. ${getSkill(skillId)?.name || "空き"}`;
     battleSkillDisplay.appendChild(item);
   });
 }
@@ -361,8 +341,8 @@ function updateBattleHp() {
   playerHpText.textContent = `${playerHp} / ${MAX_HP}`;
   enemyHpText.textContent = `${enemyHp} / ${MAX_HP}`;
 
-  playerHpBar.style.width = `${playerHp / MAX_HP * 100}%`;
-  enemyHpBar.style.width = `${enemyHp / MAX_HP * 100}%`;
+  playerHpBar.style.width = `${playerHp}%`;
+  enemyHpBar.style.width = `${enemyHp}%`;
 }
 
 function addLog(message) {
@@ -409,76 +389,77 @@ function startBattle() {
   updateBattleHp();
   renderBattleSkillDisplay();
 
-  battleLog.innerHTML = "";
   addLog("バトル開始！");
-  addLog("敵の技構成が決まった！");
+  addLog("敵の技構成がランダムに決まった！");
   addLog("サイコロを振って技を発動しよう。");
 }
 
 function takeTurn() {
   if (battleFinished) return;
 
-  if (playerHp <= 0 || enemyHp <= 0) {
-    finishBattle();
-    return;
-  }
-
   const playerRoll = Math.floor(Math.random() * 6) + 1;
   const enemyRoll = Math.floor(Math.random() * 6) + 1;
 
-  const playerIndex = playerRoll - 1;
-  const enemyIndex = enemyRoll - 1;
+  const playerSkill = getSkill(loadout[playerRoll - 1]);
+  const enemySkill = getSkill(enemyLoadout[enemyRoll - 1]);
 
-  const playerSkill = getSkill(loadout[playerIndex]);
-  const enemySkill = getSkill(enemyLoadout[enemyIndex]);
+  if (!playerSkill || !enemySkill) {
+    addLog("技の読み込みに失敗しました。");
+    return;
+  }
 
   playerDie.textContent = playerRoll;
   enemyDie.textContent = enemyRoll;
 
-  renderBattleSkillDisplay(playerIndex);
+  renderBattleSkillDisplay(playerRoll - 1);
 
   addLog(`あなた：${playerRoll} → ${playerSkill.name}`);
   addLog(`敵：${enemyRoll} → ${enemySkill.name}`);
 
-  let playerDamage = 0;
-  let playerHeal = 0;
-  let enemyDamage = 0;
-  let enemyHeal = 0;
+  // プレイヤーの技の効果
+  const playerDamage =
+    playerSkill.type === "damage" ? playerSkill.value : 0;
+  const playerHeal =
+    playerSkill.type === "heal" ? playerSkill.value : 0;
 
-  if (playerSkill.type === "damage") {
-    enemyDamage = playerSkill.value;
-  } else {
-    playerHeal = playerSkill.value;
-  }
+  // 敵の技の効果
+  const enemyDamage =
+    enemySkill.type === "damage" ? enemySkill.value : 0;
+  const enemyHeal =
+    enemySkill.type === "heal" ? enemySkill.value : 0;
 
-  if (enemySkill.type === "damage") {
-    playerDamage = enemySkill.value;
-  } else {
-    enemyHeal = enemySkill.value;
-  }
+  // プレイヤーの攻撃は敵に、敵の攻撃はプレイヤーに適用
+  const oldPlayerHp = playerHp;
+  const oldEnemyHp = enemyHp;
 
-  const playerHpAfterDamage = Math.max(0, playerHp - playerDamage);
-  const enemyHpAfterDamage = Math.max(0, enemyHp - enemyDamage);
+  playerHp = Math.max(
+    0,
+    Math.min(MAX_HP, playerHp - enemyDamage + playerHeal)
+  );
 
-  playerHp = Math.min(MAX_HP, playerHpAfterDamage + playerHeal);
-  enemyHp = Math.min(MAX_HP, enemyHpAfterDamage + enemyHeal);
+  enemyHp = Math.max(
+    0,
+    Math.min(MAX_HP, enemyHp - playerDamage + enemyHeal)
+  );
 
+  // 結果ログ
   if (playerDamage > 0) {
-    addLog(`あなたは ${playerDamage} ダメージを受けた！`);
+    addLog(`敵に ${playerDamage} ダメージ！`);
   }
 
   if (playerHeal > 0) {
-    addLog(`あなたは ${playerHp - playerHpAfterDamage} 回復した！`);
+    addLog(`あなたは ${playerHp - Math.max(0, oldPlayerHp - enemyDamage)} 回復した！`);
   }
 
   if (enemyDamage > 0) {
-    addLog(`敵に ${enemyDamage} ダメージ！`);
+    addLog(`あなたは ${enemyDamage} ダメージを受けた！`);
   }
 
   if (enemyHeal > 0) {
-    addLog(`敵は ${enemyHp - enemyHpAfterDamage} 回復した！`);
+    addLog(`敵は ${enemyHp - Math.max(0, oldEnemyHp - playerDamage)} 回復した！`);
   }
 
+  // HPの数字とバーを更新
   updateBattleHp();
 
   if (playerHp <= 0 || enemyHp <= 0) {
@@ -502,14 +483,15 @@ function finishBattle() {
   }
 
   addLog(`あなたの残りHP：${playerHp} / ${MAX_HP}`);
+  addLog(`敵の残りHP：${enemyHp} / ${MAX_HP}`);
 }
 
 function returnToSetup() {
-  // HP・購入技・装備をすべて初期状態へ戻す
   playerHp = MAX_HP;
   enemyHp = MAX_HP;
   inventory = { ...INITIAL_COUNTS };
   loadout = [...INITIAL_LOADOUT];
+  enemyLoadout = [];
 
   selectedSkillId = null;
   selectedSlotIndex = null;
