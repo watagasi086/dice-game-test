@@ -4,108 +4,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dice Battle</title>
+  <title>ダイスバトル Ver.1.9</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header id="gameHeader" class="game-header setup-mode">
-    <div class="header-inner">
-      <div class="version">Ver. 1.8.3</div>
-
-      <div id="setupHp" class="setup-hp">
-        <div class="hp-label">
-          <span>あなたの体力</span>
-          <span id="setupHpText">100 / 100</span>
-        </div>
-        <div class="hp-track">
-          <div id="setupHpBar" class="hp-fill"></div>
-        </div>
-      </div>
-    </div>
+  <header id="gameHeader" class="setup-mode">
+    <div class="version">Ver. 1.9</div>
+    <h1>🎲 ダイスバトル</h1>
+    <p>技を選んで、ダイスで勝負！</p>
   </header>
 
   <main>
+    <!-- 準備画面 -->
     <section id="setupScreen">
-      <h1>🎲 Dice Battle</h1>
-      <p class="description">
-        技を購入してサイコロにセットしよう！<br>
-        体力を使って技を購入するぞ。
-      </p>
-
-      <div class="setup-layout">
-        <section class="panel">
-          <h2>🛒 技ショップ</h2>
-          <p class="subtext">購入費用は体力から引かれます。</p>
-          <div id="shopList"></div>
-        </section>
-
-        <section class="panel">
-          <h2>⚔️ 技のセット</h2>
-          <p class="subtext">スロットを選んでから技を選択。</p>
-
-          <div id="battleSlots" class="battle-slots"></div>
-
-          <p id="selectedSkillText" class="selected-text">
-            セットするスロットを選んでね。
-          </p>
-
-          <h3>📦 所持している技</h3>
-          <div id="ownedList"></div>
-
-          <button id="startButton" class="primary-button" disabled>
-            バトル開始！
-          </button>
-        </section>
-      </div>
-    </section>
-
-    <section id="battleScreen" class="hidden">
-      <h1>⚔️ バトル！</h1>
-
-      <div class="battle-status">
-        <section class="fighter-card">
-          <h2>あなた</h2>
-          <div class="hp-label">
-            <span>HP</span>
-            <span id="playerHpText">100 / 100</span>
+      <section class="panel">
+        <h2>❤️ あなたのHP</h2>
+        <div class="hp-container">
+          <div class="hp-bar">
+            <div id="setupHpBar" class="hp-fill"></div>
           </div>
-          <div class="hp-track">
-            <div id="playerHpBar" class="hp-fill"></div>
-          </div>
-          <div id="playerDie" class="die">?</div>
-          <p>あなたのサイコロ</p>
-        </section>
-
-        <div class="vs">VS</div>
-
-        <section class="fighter-card enemy-card">
-          <h2>敵</h2>
-          <div class="hp-label">
-            <span>HP</span>
-            <span id="enemyHpText">100 / 100</span>
-          </div>
-          <div class="hp-track">
-            <div id="enemyHpBar" class="hp-fill enemy-fill"></div>
-          </div>
-          <div id="enemyDie" class="die">?</div>
-          <p>敵のサイコロ</p>
-        </section>
-      </div>
-
-      <section class="panel battle-skills-panel">
-        <h2>今回の技</h2>
-        <div id="battleSkillDisplay" class="battle-skill-display"></div>
+          <span id="setupHpText">100 / 100</span>
+        </div>
+        <p class="hint">技を購入すると、その分HPを消費するよ。</p>
       </section>
 
-      <button id="rollButton" class="primary-button">
-        🎲 サイコロを振る！
-      </button>
-
-      <section class="panel log-panel">
-        <h2>📜 バトルログ</h2>
-        <div id="battleLog" class="battle-log">
-          バトル開始！
+      <section class="panel">
+        <h2>🎯 先攻・後攻の予想</h2>
+        <p>判定ダイスの奇数・偶数を選ぼう！</p>
+        <div class="choice-row">
+          <label class="choice">
+            <input type="radio" name="parityChoice" value="odd" checked>
+            <span>奇数（1・3・5）</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="parityChoice" value="even">
+            <span>偶数（2・4・6）</span>
+          </label>
         </div>
+        <p class="hint">当たればあなたが先攻、外れたら敵が先攻。</p>
+      </section>
+
+      <section class="panel">
+        <h2>🛒 技ショップ</h2>
+        <div id="shopList" class="shop-list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>🎒 バトルスロット（6枠）</h2>
+        <p class="hint">スロットを選んで、下の所持技からセットしよう。</p>
+        <div id="battleSlots" class="battle-slots"></div>
+        <p id="selectedSkillText" class="selected-text">セットするスロットを選んでね。</p>
+        <div id="ownedList" class="owned-list"></div>
+      </section>
+
+      <button id="startButton" class="primary-button" disabled>
+        バトル開始！
+      </button>
+    </section>
+
+    <!-- バトル画面 -->
+    <section id="battleScreen" class="hidden">
+      <section class="panel">
+        <h2>❤️ HP状況</h2>
+
+        <div class="fighter">
+          <div class="fighter-heading">
+            <strong>あなた</strong>
+            <span id="playerHpText">100 / 100</span>
+          </div>
+          <div class="hp-bar">
+            <div id="playerHpBar" class="hp-fill"></div>
+          </div>
+        </div>
+
+        <div class="fighter">
+          <div class="fighter-heading">
+            <strong>敵</strong>
+            <span id="enemyHpText">100 / 100</span>
+          </div>
+          <div class="hp-bar">
+            <div id="enemyHpBar" class="hp-fill enemy-fill"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel turn-panel">
+        <h2 id="turnStatus">先攻・後攻を判定中……</h2>
+        <p id="turnDescription">ダイスの結果を待とう。</p>
+
+        <div class="dice-area">
+          <div class="dice-box">
+            <span>あなた</span>
+            <div id="playerDie" class="die">?</div>
+          </div>
+          <div class="dice-box">
+            <span>敵</span>
+            <div id="enemyDie" class="die">?</div>
+          </div>
+        </div>
+
+        <div id="battleSkillDisplay" class="battle-skill-display"></div>
+
+        <button id="rollButton" class="primary-button" disabled>
+          ダイスを振る
+        </button>
+      </section>
+
+      <section class="panel">
+        <h2>📜 バトルログ</h2>
+        <div id="battleLog" class="battle-log"></div>
       </section>
 
       <button id="backButton" class="secondary-button hidden">
