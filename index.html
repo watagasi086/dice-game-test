@@ -1,176 +1,112 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dice Battle</title>
+  <title>ダイスバトル</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <main class="game">
+  <header class="game-header">
+    <div class="version">Ver. 1.4</div>
+  </header>
 
-    <!-- 上部の体力表示 -->
-    <header class="top-hp">
-      <div class="hp-title">あなたの体力</div>
-
-      <div class="hp-number">
-        <span id="setupHp">100</span>/100
+  <main>
+    <!-- 準備画面 -->
+    <section id="setupScreen" class="screen">
+      <div class="setup-hp">
+        <div class="hp-label">
+          <span>あなたの体力</span>
+          <span id="setupHpText">100 / 100</span>
+        </div>
+        <div class="hp-track">
+          <div id="setupHpBar" class="hp-fill"></div>
+        </div>
       </div>
 
-      <div class="hp-bar">
-        <div id="setupHpBar"></div>
-      </div>
-    </header>
+      <h1>🎲 ダイスバトル</h1>
+      <p class="description">技を購入して、サイコロの出目に装備しよう！</p>
 
-
-    <!-- 技のセット画面 -->
-    <section id="setupScreen">
-
-      <h1>🎲 技をセット</h1>
-
-      <p class="guide" id="guide">
-        所持技を選んでから、変更したいスロットを押してください。
-      </p>
-
-      <!-- 横並びレイアウト -->
       <div class="setup-layout">
+        <section class="panel shop-panel">
+          <h2>🛒 技ショップ</h2>
+          <p class="small-note">技の購入には体力を使うよ！</p>
+          <div id="shopList" class="shop-list"></div>
+        </section>
 
-        <!-- 左側：ショップ -->
-        <div class="setup-left">
+        <section class="panel equipment-panel">
+          <h2>🎲 サイコロの装備</h2>
+          <p class="small-note">先に所持技を選んでから、装備したい枠を押してな。</p>
+          <div id="battleSlots" class="slots"></div>
 
-          <section class="panel">
-            <h2>🛒 ショップ</h2>
+          <div class="owned-area">
+            <h2>🎒 所持技</h2>
+            <p id="selectedSkillText" class="selected-text">装備したい技を選択してな</p>
+            <div id="ownedList" class="owned-list"></div>
+          </div>
 
-            <p class="sub">
-              技を購入すると体力を消費します。<br>
-              購入した技は、所持数の範囲で装備できます。
-            </p>
-
-            <div id="shopList"></div>
-          </section>
-
-        </div>
-
-
-        <!-- 右側：スロットと所持技 -->
-        <div class="setup-right">
-
-          <section class="panel">
-            <h2>🎲 技スロット</h2>
-
-            <p class="sub">
-              サイコロの出目ごとに技を1つセットします。
-            </p>
-
-            <div id="slotList"></div>
-          </section>
-
-
-          <section class="panel">
-            <h2>📦 所持技</h2>
-
-            <p class="sub">
-              技を選択してから、装備したいスロットを押してください。
-            </p>
-
-            <div id="ownedList"></div>
-          </section>
-
-        </div>
-
+          <button id="startButton" class="primary-button">
+            バトル開始！
+          </button>
+        </section>
       </div>
-
-
-      <button id="startButton" class="main-button">
-        この構成でバトル開始
-      </button>
-
     </section>
-
-
 
     <!-- バトル画面 -->
-    <section id="battleScreen" class="hidden">
+    <section id="battleScreen" class="screen hidden">
+      <h1>⚔️ バトル！</h1>
 
-      <h1>⚔️ BATTLE</h1>
-
-
-      <!-- HP表示 -->
-      <section class="battle-status">
-
-        <div class="fighter enemy">
-          <h2>相手</h2>
-
-          <div class="battle-hp">
-            <div id="enemyHpBar"></div>
+      <div class="battle-hp-area">
+        <div class="fighter">
+          <div class="fighter-name">あなた</div>
+          <div class="battle-hp-text" id="playerHpText">100 / 100 HP</div>
+          <div class="hp-track">
+            <div id="playerHpBar" class="hp-fill"></div>
           </div>
-
-          <b>
-            <span id="enemyHp">100</span>/100
-          </b>
         </div>
-
 
         <div class="fighter">
-          <h2>あなた</h2>
-
-          <div class="battle-hp">
-            <div id="playerHpBar"></div>
+          <div class="fighter-name">相手</div>
+          <div class="battle-hp-text" id="enemyHpText">100 / 100 HP</div>
+          <div class="hp-track">
+            <div id="enemyHpBar" class="hp-fill enemy-fill"></div>
           </div>
+        </div>
+      </div>
 
-          <b>
-            <span id="playerHp">100</span>/100
-          </b>
+      <div class="battle-board">
+        <div class="dice-card">
+          <p>あなたの出目</p>
+          <div id="playerDie" class="die">🎲</div>
+          <div id="playerAction" class="action-text">準備OK！</div>
         </div>
 
-      </section>
-
-
-      <!-- 自分のサイコロ構成 -->
-      <section class="panel battle-loadout">
-
-        <h2>🎲 あなたのサイコロ</h2>
-
-        <div id="battleSlots"></div>
-
-      </section>
-
-
-      <!-- サイコロを振る -->
-      <section class="dice-panel">
-
-        <div id="dice" class="dice">?</div>
-
-        <div id="battleSkill" class="battle-skill">
-          サイコロを振ろう
+        <div class="dice-card">
+          <p>相手の出目</p>
+          <div id="enemyDie" class="die">🎲</div>
+          <div id="enemyAction" class="action-text">相手を待っている…</div>
         </div>
+      </div>
 
-        <button id="rollButton" class="main-button">
-          サイコロを振る
-        </button>
+      <div class="panel battle-skills-panel">
+        <h2>あなたのサイコロ</h2>
+        <div id="battleSkillDisplay" class="battle-skill-display"></div>
+      </div>
 
-        <p id="battleResult"></p>
-
-      </section>
-
-
-      <!-- バトルログ -->
-      <section class="panel log-panel">
-
-        <h2>📜 バトルログ</h2>
-
-        <div id="log"></div>
-
-      </section>
-
-
-      <button id="backButton" class="sub-button">
-        技構成に戻る
+      <button id="rollButton" class="primary-button roll-button">
+        サイコロを振る！
       </button>
 
-    </section>
+      <div class="panel log-panel">
+        <h2>📜 バトルログ</h2>
+        <div id="battleLog" class="battle-log">バトル開始！サイコロを振ろう。</div>
+      </div>
 
+      <button id="backButton" class="secondary-button">
+        準備画面に戻る
+      </button>
+    </section>
   </main>
 
   <script src="script.js"></script>
