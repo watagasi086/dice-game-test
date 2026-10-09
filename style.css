@@ -1,96 +1,144 @@
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #111318;
+  --panel: #20242d;
+  --panel2: #171a21;
+  --border: #373d49;
+  --text: #f4f5f7;
+  --muted: #a8afbd;
+  --accent: #f1c40f;
+  --blue: #3498db;
+  --green: #35c759;
+  --red: #e74c3c;
+}
 
 body {
   margin: 0;
-  background: #121212;
-  color: #fff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
 }
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 全体 */
 
 .game {
-  width: min(100%, 560px);
+  width: min(100%, 1500px);
   margin: auto;
-  padding: 16px;
+  padding: 12px 18px 28px;
 }
 
-h1 { text-align: center; margin: 8px 0 4px; }
-h2 { font-size: 18px; }
-.subtitle, .hint { color: #aaa; text-align: center; }
-
-.screen { min-height: 100vh; }
-.hidden { display: none !important; }
-
-.setup-status {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 18px 0;
+h1 {
+  margin: 8px 0 14px;
+  font-size: clamp(22px, 2.4vw, 32px);
 }
 
-.setup-status > div {
-  background: #242424;
-  border-radius: 12px;
-  padding: 12px;
+h2 {
+  margin: 0 0 12px;
+  font-size: 19px;
+}
+
+.sub,
+.guide {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.guide {
   text-align: center;
+  min-height: 20px;
 }
 
-.setup-status span {
-  display: block;
-  color: #aaa;
+/* HP表示 */
+
+.top-hp {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(17, 19, 24, 0.97);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hp-title {
+  color: var(--muted);
   font-size: 13px;
 }
 
-.setup-status strong {
-  font-size: 24px;
+.hp-number {
+  margin: 2px 0 5px;
+  font-size: 23px;
+  font-weight: 900;
 }
 
-.dice-loadout, .skill-shop, .loadout-summary, .dice-area, .log {
-  background: #242424;
-  border-radius: 14px;
-  padding: 14px;
-  margin-top: 14px;
+.hp-bar,
+.battle-hp {
+  height: 12px;
+  overflow: hidden;
+  background: #383d47;
+  border-radius: 999px;
 }
 
-.loadout-grid {
+.hp-bar div,
+.battle-hp div {
+  height: 100%;
+  width: 100%;
+  background: var(--green);
+  transition: width 0.2s;
+}
+
+/* セット画面 */
+
+.setup-layout {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: minmax(260px, 0.85fr) minmax(320px, 1.15fr);
+  gap: 14px;
+  align-items: start;
 }
 
-.die-slot {
-  border: 2px solid #3b3b3b;
-  background: #1b1b1b;
-  border-radius: 12px;
-  padding: 10px;
+.setup-left,
+.setup-right {
+  min-width: 0;
 }
 
-.die-number {
-  font-size: 24px;
-  font-weight: 800;
-  margin-right: 8px;
+.panel {
+  padding: 15px;
+  margin-bottom: 13px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
 }
 
-.die-skill {
-  font-weight: 700;
-}
+/* ショップ */
 
-.die-cost {
-  display: block;
-  color: #aaa;
-  font-size: 12px;
-  margin-top: 3px;
-}
-
-.skill-card {
+.skill-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border: 1px solid #3b3b3b;
-  background: #1b1b1b;
-  border-radius: 12px;
   padding: 11px;
   margin-bottom: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .skill-info {
@@ -99,136 +147,355 @@ h2 { font-size: 18px; }
 
 .skill-info strong {
   display: block;
-}
-
-.skill-info small {
-  color: #aaa;
-  display: block;
-  margin-top: 3px;
-}
-
-.skill-card button, .slot-button {
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 9px;
-  padding: 9px 11px;
-  font-weight: 700;
-  background: #3498db;
-  color: white;
-}
-
-.skill-card button:disabled {
-  opacity: .35;
-}
-
-.slot-button {
-  width: 100%;
-  margin-top: 8px;
-  background: #555;
-}
-
-.primary, .secondary {
-  width: 100%;
-  border: 0;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 800;
-  margin-top: 14px;
-}
-
-.primary { background: #f1c40f; color: #111; }
-.secondary { background: #444; color: white; }
-
-.primary:disabled {
-  opacity: .4;
-}
-
-.status {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.fighter {
-  background: #242424;
-  border-radius: 14px;
-  padding: 12px;
-  text-align: center;
-}
-
-.fighter h2 { margin: 0 0 8px; }
-.hpbar {
-  height: 14px;
-  background: #444;
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.hpbar div {
-  height: 100%;
-  width: 100%;
-  background: #4caf50;
-  transition: width .25s;
-}
-
-.enemy .hpbar div { background: #e74c3c; }
-.fighter p { margin: 8px 0 0; }
-
-#battleLoadout {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 5px;
-}
-
-.mini-die {
-  background: #1b1b1b;
-  border-radius: 8px;
-  padding: 7px 2px;
-  text-align: center;
-  font-size: 12px;
-}
-
-.mini-die strong {
-  display: block;
-  font-size: 18px;
-}
-
-.dice-area { text-align: center; }
-
-.dice {
-  width: 82px;
-  height: 82px;
-  margin: 5px auto 12px;
-  background: white;
-  color: #111;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  font-size: 42px;
-  font-weight: bold;
-}
-
-.rolled-skill {
-  font-size: 19px;
-  font-weight: 800;
-  min-height: 29px;
-}
-
-#result {
-  color: #ccc;
-  min-height: 24px;
-}
-
-.log { margin-top: 14px; }
-#log {
-  height: 145px;
-  overflow-y: auto;
   font-size: 14px;
 }
 
+.skill-info small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.buy-button {
+  flex-shrink: 0;
+  padding: 9px 12px;
+  color: #111;
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+/* 技スロット */
+
+#slotList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.slot-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px;
+  background: var(--panel2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.slot-item.selected {
+  border-color: var(--accent);
+  background: #302a13;
+}
+
+.slot-number {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: #111;
+  background: var(--accent);
+  border-radius: 8px;
+  font-weight: 900;
+}
+
+.slot-info {
+  min-width: 0;
+}
+
+.slot-name {
+  display: block;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.slot-effect {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* 所持技 */
+
+#ownedList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.owned-item {
+  min-width: 0;
+  padding: 11px;
+  background: var(--panel2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.owned-item.selected {
+  border-color: var(--blue);
+  background: #13283a;
+}
+
+.owned-item.equipped {
+  border-color: #477d56;
+}
+
+.owned-info strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.owned-info small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.owned-status {
+  display: block;
+  margin-top: 7px;
+  color: #9bd5a8;
+  font-size: 11px;
+}
+
+/* ボタン */
+
+.main-button,
+.sub-button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 11px;
+  font-weight: 900;
+}
+
+.main-button {
+  color: #111;
+  background: var(--accent);
+}
+
+.sub-button {
+  color: white;
+  background: #454b57;
+}
+
+/* バトル画面 */
+
+.battle-status {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.fighter {
+  padding: 14px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+}
+
+.fighter h2 {
+  margin-bottom: 8px;
+}
+
+.fighter b {
+  display: block;
+  margin-top: 7px;
+}
+
+.enemy .battle-hp div {
+  background: var(--red);
+}
+
+#battleSlots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.battle-slot {
+  min-width: 0;
+  padding: 10px 4px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 11px;
+}
+
+.battle-slot strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 20px;
+}
+
+.dice-panel {
+  padding: 18px;
+  margin: 14px 0;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.dice {
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 12px;
+  color: #111;
+  background: white;
+  border-radius: 14px;
+  font-size: 42px;
+  font-weight: 900;
+}
+
+.battle-skill {
+  min-height: 30px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+#battleResult {
+  min-height: 22px;
+  color: var(--muted);
+}
+
+#log {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
 .log-entry {
-  padding: 6px 0;
-  border-bottom: 1px solid #333;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+/* PC・横長画面 */
+
+@media (min-width: 850px) {
+  .top-hp {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .hp-title {
+    white-space: nowrap;
+  }
+
+  .hp-number {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .hp-bar {
+    flex: 1;
+  }
+
+  #setupScreen > h1,
+  #setupScreen > .guide {
+    text-align: left;
+  }
+
+  .setup-layout {
+    grid-template-columns: minmax(280px, 0.8fr) minmax(440px, 1.2fr);
+  }
+}
+
+/* スマホ横画面 */
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .game {
+    width: 100%;
+    padding: 8px 12px 16px;
+  }
+
+  .top-hp {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 10px;
+  }
+
+  .hp-title {
+    white-space: nowrap;
+  }
+
+  .hp-number {
+    margin: 0;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .hp-bar {
+    flex: 1;
+  }
+
+  #setupScreen > h1 {
+    margin: 8px 0;
+  }
+
+  .setup-layout {
+    grid-template-columns: minmax(220px, 0.8fr) minmax(300px, 1.2fr);
+    gap: 10px;
+  }
+
+  .panel {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 16px;
+  }
+
+  .skill-item,
+  .slot-item,
+  .owned-item {
+    padding: 8px;
+  }
+
+  .main-button,
+  .sub-button {
+    padding: 11px;
+  }
+}
+
+/* 縦向きのスマホでは横向き案内 */
+
+@media (orientation: portrait) and (max-width: 600px) {
+  body::before {
+    content: "横向きにすると遊びやすくなります ↻";
+    display: block;
+    padding: 8px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    background: #20242d;
+  }
+
+  .game {
+    padding: 8px;
+  }
+
+  .setup-layout {
+    grid-template-columns: 1fr;
+  }
 }
