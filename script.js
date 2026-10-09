@@ -73,11 +73,9 @@ function getSkill(id) {
 }
 
 function getSkillDescription(skill) {
-  if (skill.type === "damage") {
-    return `${skill.value}ダメージ`;
-  }
-
-  return `${skill.value}回復`;
+  return skill.type === "damage"
+    ? `${skill.value}ダメージ`
+    : `${skill.value}回復`;
 }
 
 function updateSetupHp() {
@@ -121,13 +119,9 @@ function renderShop() {
 
     const detail = document.createElement("div");
     detail.className = "skill-detail";
-
-    if (skill.cost === 0) {
-      detail.textContent = `${getSkillDescription(skill)}・初期技`;
-    } else {
-      detail.textContent =
-        `${getSkillDescription(skill)}・購入費用 ${skill.cost} HP`;
-    }
+    detail.textContent = skill.cost === 0
+      ? `${getSkillDescription(skill)}・初期技`
+      : `${getSkillDescription(skill)}・購入費用 ${skill.cost} HP`;
 
     info.append(name, detail);
 
@@ -153,17 +147,18 @@ function getEquippedCount(skillId) {
 }
 
 function getAvailableCount(skillId) {
-  const total = inventory[skillId] || 0;
-  const equipped = getEquippedCount(skillId);
-
-  return Math.max(0, total - equipped);
+  return Math.max(
+    0,
+    (inventory[skillId] || 0) - getEquippedCount(skillId)
+  );
 }
 
 function buySkill(skillId) {
   const skill = getSkill(skillId);
 
-  if (!skill || skill.cost <= 0) return;
-  if (playerHp < skill.cost) return;
+  if (!skill || skill.cost <= 0 || playerHp < skill.cost) {
+    return;
+  }
 
   playerHp -= skill.cost;
   inventory[skillId] = (inventory[skillId] || 0) + 1;
@@ -218,8 +213,8 @@ function renderSlots() {
 function renderOwnedSkills() {
   ownedList.innerHTML = "";
 
-  const ownedSkills = skills.filter(skill =>
-    (inventory[skill.id] || 0) > 0
+  const ownedSkills = skills.filter(
+    skill => (inventory[skill.id] || 0) > 0
   );
 
   if (ownedSkills.length === 0) {
@@ -278,15 +273,8 @@ function equipSkill(slotIndex, skillId) {
   }
 
   const skill = getSkill(skillId);
-  if (!skill) return;
+  if (!skill || loadout[slotIndex] === skillId) return;
 
-  const currentSkillId = loadout[slotIndex];
-
-  // すでにセットされている技なら変更しない
-  if (currentSkillId === skillId) return;
-
-  // 所持数から見て、別のスロットで使っている技を
-  // 移動する場合も含めてセット可能か確認する
   const available = getAvailableCount(skillId);
 
   if (available <= 0) {
@@ -296,8 +284,7 @@ function equipSkill(slotIndex, skillId) {
 
     if (anotherSlot === -1) return;
 
-    // 別スロットから技を移動
-    loadout[anotherSlot] = currentSkillId;
+    loadout[anotherSlot] = loadout[slotIndex];
   }
 
   loadout[slotIndex] = skillId;
@@ -319,13 +306,9 @@ function updateSelectedText() {
 
   const current = getSkill(loadout[selectedSlotIndex]);
 
-  if (current) {
-    selectedSkillText.textContent =
-      `スロット ${selectedSlotIndex + 1} を選択中（現在：${current.name}）`;
-  } else {
-    selectedSkillText.textContent =
-      `スロット ${selectedSlotIndex + 1} を選択中`;
-  }
+  selectedSkillText.textContent = current
+    ? `スロット ${selectedSlotIndex + 1} を選択中（現在：${current.name}）`
+    : `スロット ${selectedSlotIndex + 1} を選択中`;
 }
 
 function renderBattleSkillDisplay(activeIndex = -1) {
@@ -360,7 +343,6 @@ function updateBattleHp() {
 function addLog(message) {
   battleLogEntries.push(message);
 
-  // ログが増えすぎないように直近の内容を保持
   if (battleLogEntries.length > 60) {
     battleLogEntries.shift();
   }
@@ -417,7 +399,6 @@ function takeTurn() {
     return;
   }
 
-  // 1〜6の目を振る
   const playerRoll = Math.floor(Math.random() * 6) + 1;
   const enemyRoll = Math.floor(Math.random() * 6) + 1;
 
@@ -435,8 +416,6 @@ function takeTurn() {
   addLog(`あなた：${playerRoll} → ${playerSkill.name}`);
   addLog(`敵：${enemyRoll} → ${enemySkill.name}`);
 
-  // お互いの行動を計算する
-  // 同じターンで両者が行動できるよう、HP変化を先に計算
   let playerDamage = 0;
   let playerHeal = 0;
   let enemyDamage = 0;
@@ -454,22 +433,22 @@ function takeTurn() {
     enemyHeal = enemySkill.value;
   }
 
-  const oldPlayerHp = playerHp;
-  const oldEnemyHp = enemyHp;
+  const playerHpBefore = playerHp;
+  const enemyHpBefore = enemyHp;
 
-  playerHp = Math.min(MAX_HP, playerHp - playerDamage + playerHeal);
-  enemyHp = Math.min(MAX_HP, enemyHp - enemyDamage + enemyHeal);
+  const playerHpAfterDamage = Math.max(0, playerHp - playerDamage);
+  const enemyHpAfterDamage = Math.max(0, enemyHp - enemyDamage);
 
-  playerHp = Math.max(0, playerHp);
-  enemyHp = Math.max(0, enemyHp);
+  playerHp = Math.min(MAX_HP, playerHpAfterDamage + playerHeal);
+  enemyHp = Math.min(MAX_HP, enemyHpAfterDamage + enemyHeal);
 
   if (playerDamage > 0) {
     addLog(`あなたは ${playerDamage} ダメージを受けた！`);
   }
 
   if (playerHeal > 0) {
-    const actualHeal = playerHp - Math.max(0, oldPlayerHp - playerDamage);
-    addLog(`あなたは ${Math.max(0, actualHeal)} 回復した！`);
+    const actualHeal = playerHp - playerHpAfterDamage;
+    addLog(`あなたは ${actualHeal} 回復した！`);
   }
 
   if (enemyDamage > 0) {
@@ -477,8 +456,8 @@ function takeTurn() {
   }
 
   if (enemyHeal > 0) {
-    const actualHeal = enemyHp - Math.max(0, oldEnemyHp - enemyDamage);
-    addLog(`敵は ${Math.max(0, actualHeal)} 回復した！`);
+    const actualHeal = enemyHp - enemyHpAfterDamage;
+    addLog(`敵は ${actualHeal} 回復した！`);
   }
 
   updateBattleHp();
@@ -507,13 +486,17 @@ function finishBattle() {
 }
 
 function returnToSetup() {
-  // ★ Ver. 1.6：技構成を初期状態に戻す
-  // 購入した技の所持数と残りHPは維持する
+  // HP・所持技・技構成をすべて初期状態に戻す
+  playerHp = MAX_HP;
+  enemyHp = MAX_HP;
+
+  inventory = { ...INITIAL_COUNTS };
   loadout = [...INITIAL_LOADOUT];
 
-  // 選択状態もリセット
   selectedSkillId = null;
   selectedSlotIndex = null;
+  battleFinished = false;
+  battleLogEntries = [];
 
   battleScreen.classList.add("hidden");
   setupScreen.classList.remove("hidden");
@@ -521,9 +504,7 @@ function returnToSetup() {
   gameHeader.classList.remove("battle-mode");
   gameHeader.classList.add("setup-mode");
 
-  // 戦闘後の残りHPをそのまま表示
   updateSetupHp();
-
   renderShop();
   renderSlots();
   renderOwnedSkills();
