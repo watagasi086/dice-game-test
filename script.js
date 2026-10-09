@@ -327,16 +327,17 @@ function updateSelectedText() {
 // 敵の技購入システム Ver. 1.8
 // ==============================
 
+
 function generateEnemyLoadout() {
   let remainingHp = MAX_HP;
   const newLoadout = [];
 
-  // 購入できる技だけを候補にする
+  // 残りHPを必ず1以上残せる技だけ候補にする
   function getAffordableSkills() {
-    return skills.filter(skill => skill.cost <= remainingHp);
+    return skills.filter(skill => skill.cost < remainingHp);
   }
 
-  // ランダムに技を購入する
+  // 購入できる技からランダムに選ぶ
   function buyRandomSkill() {
     const affordable = getAffordableSkills();
 
@@ -349,9 +350,9 @@ function generateEnemyLoadout() {
     return skill;
   }
 
-  // まず攻撃技を最低1つ購入する
+  // まず攻撃技を最低1つ確保する
   const affordableAttacks = skills.filter(
-    skill => skill.type === "damage" && skill.cost <= remainingHp
+    skill => skill.type === "damage" && skill.cost < remainingHp
   );
 
   const firstAttack =
@@ -362,15 +363,12 @@ function generateEnemyLoadout() {
   remainingHp -= firstAttack.cost;
   newLoadout.push(firstAttack.id);
 
-  // 残り5枠は購入可能な技からランダムで選ぶ
+  // 残り5枠もHPを1以上残せる技からランダム選択
   while (newLoadout.length < 6) {
     buyRandomSkill();
   }
 
-  // 出目1〜6とスロット1〜6を対応させる
   enemyLoadout = newLoadout;
-
-  // 技購入後に残ったHPが敵の開始HP
   enemyHp = remainingHp;
 
   return {
