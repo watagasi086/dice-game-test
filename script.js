@@ -30,15 +30,20 @@ let enemyHp = MAX_HP;
 
 let inventory = { ...INITIAL_COUNTS };
 let loadout = [...INITIAL_LOADOUT];
-
-// 敵の技構成はバトル開始時にランダム生成
 let enemyLoadout = [];
 
 let selectedSkillId = null;
 let selectedSlotIndex = null;
+
 let battleFinished = false;
 let battleLogEntries = [];
 
+// 先攻後攻システム
+let firstTurn = "player";
+let currentTurn = "player";
+let enemyActionPending = false;
+
+// HTML要素
 const gameHeader = document.getElementById("gameHeader");
 const setupScreen = document.getElementById("setupScreen");
 const battleScreen = document.getElementById("battleScreen");
@@ -61,10 +66,17 @@ const enemyHpBar = document.getElementById("enemyHpBar");
 const playerDie = document.getElementById("playerDie");
 const enemyDie = document.getElementById("enemyDie");
 
+const turnStatus = document.getElementById("turnStatus");
+const turnDescription = document.getElementById("turnDescription");
+
 const battleSkillDisplay = document.getElementById("battleSkillDisplay");
 const rollButton = document.getElementById("rollButton");
 const battleLog = document.getElementById("battleLog");
 const backButton = document.getElementById("backButton");
+
+// ==============================
+// 共通処理
+// ==============================
 
 function getSkill(id) {
   return skills.find(skill => skill.id === id);
@@ -76,8 +88,12 @@ function getSkillDescription(skill) {
     : `${skill.value}回復`;
 }
 
+function rollDie() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
 // ==============================
-// プレイヤーの準備画面
+// 準備画面
 // ==============================
 
 function updateSetupHp() {
@@ -136,7 +152,9 @@ function renderShop() {
       button.disabled = true;
     } else {
       button.textContent = "購入";
-      button.disabled = playerHp < skill.cost;
+
+      // 購入後にHPが0になる場合は買えない
+      button.disabled = playerHp <= skill.cost;
 
       button.addEventListener("click", () => {
         buySkill(skill.id);
@@ -162,7 +180,7 @@ function getAvailableCount(skillId) {
 function buySkill(skillId) {
   const skill = getSkill(skillId);
 
-  if (!skill || skill.cost <= 0 || playerHp < skill.cost) {
+  if (!skill || skill.cost <= 0 || playerHp <= skill.cost) {
     return;
   }
 
@@ -324,46 +342,37 @@ function updateSelectedText() {
 }
 
 // ==============================
-// 敵の技購入システム Ver. 1.8
+// 敵の技購入システム
 // ==============================
-
 
 function generateEnemyLoadout() {
   let remainingHp = MAX_HP;
   const newLoadout = [];
 
-  // 残りHPを必ず1以上残せる技だけ候補にする
   function getAffordableSkills() {
     return skills.filter(skill => skill.cost < remainingHp);
   }
 
-  // 購入できる技からランダムに選ぶ
   function buyRandomSkill() {
     const affordable = getAffordableSkills();
-
     const skill =
       affordable[Math.floor(Math.random() * affordable.length)];
 
     remainingHp -= skill.cost;
     newLoadout.push(skill.id);
-
-    return skill;
   }
 
-  // まず攻撃技を最低1つ確保する
-  const affordableAttacks = skills.filter(
+  // 最低1つは攻撃技を入れる
+  const attacks = skills.filter(
     skill => skill.type === "damage" && skill.cost < remainingHp
   );
 
   const firstAttack =
-    affordableAttacks[
-      Math.floor(Math.random() * affordableAttacks.length)
-    ];
+    attacks[Math.floor(Math.random() * attacks.length)];
 
   remainingHp -= firstAttack.cost;
   newLoadout.push(firstAttack.id);
 
-  // 残り5枠もHPを1以上残せる技からランダム選択
   while (newLoadout.length < 6) {
     buyRandomSkill();
   }
@@ -378,7 +387,7 @@ function generateEnemyLoadout() {
 }
 
 // ==============================
-// バトル画面
+// バトル画面・HP表示
 // ==============================
 
 function renderBattleSkillDisplay(activeIndex = -1) {
@@ -408,12 +417,19 @@ function updateBattleHp() {
 
   playerHpBar.style.width = `${playerHp / MAX_HP * 100}%`;
   enemyHpBar.style.width = `${enemyHp / MAX_HP * 100}%`;
+
+  playerHpBar.style.background =
+    playerHp <= 25 ? "#ff6b79" :
+    playerHp <= 50 ? "#ffcf70" : "#4bd69a";
+
+  enemyHpBar.style.background =
+    enemyHp <= 25 ? "#ff6b79" : "#e65c70";
 }
 
 function addLog(message) {
   battleLogEntries.push(message);
 
-  if (battleLogEntries.length > 60) {
+  if (battleLogEntries.length > 100) {
     battleLogEntries.shift();
   }
 
@@ -429,6 +445,10 @@ function addLog(message) {
   battleLog.scrollTop = battleLog.scrollHeight;
 }
 
+// ==============================
+// 先攻・後攻判定
+// ==============================
+
 function startBattle() {
   if (playerHp <= 0) return;
 
@@ -436,18 +456,28 @@ function startBattle() {
     return;
   }
 
-  // 毎回、敵がHP100から技を購入する
+  // 敵が技を購入する
   generateEnemyLoadout();
 
   battleFinished = false;
+  enemyActionPending = false;
   battleLogEntries = [];
 
-  playerDie.textContent = "?";
-  enemyDie.textContent = "?";
+  // 選んだ奇数・偶数を取得
+  const choice = document.querySelector(
+    'input[name="parityChoice"]:checked'
+  ).value;
 
-  rollButton.disabled = false;
-  rollButton.classList.remove("hidden");
-  backButton.classList.add("hidden");
+  // 判定用ダイス
+  const parityRoll = rollDie();
+  const result = parityRoll % 2 === 0 ? "even" : "odd";
+  const isCorrect = choice === result;
+
+  firstTurn = isCorrect ? "player" : "enemy";
+  currentTurn = firstTurn;
+
+  playerDie.textContent = parityRoll;
+  enemyDie.textContent = "?";
 
   setupScreen.classList.add("hidden");
   battleScreen.classList.remove("hidden");
@@ -455,107 +485,191 @@ function startBattle() {
   gameHeader.classList.remove("setup-mode");
   gameHeader.classList.add("battle-mode");
 
+  backButton.classList.add("hidden");
+  rollButton.classList.remove("hidden");
+
   updateBattleHp();
   renderBattleSkillDisplay();
-
-  battleLog.innerHTML = "";
 
   addLog("バトル開始！");
   addLog(`敵は技を購入した！ 残りHP：${enemyHp} / ${MAX_HP}`);
 
-  // 敵の購入内容をログに表示
   const enemySkillNames = enemyLoadout.map((id, index) => {
     const skill = getSkill(id);
     return `${index + 1}番：${skill.name}（${skill.cost} HP）`;
   });
 
   addLog(`敵の技構成：${enemySkillNames.join("、")}`);
-  addLog("サイコロを振って技を発動しよう。");
+  addLog(`先攻判定：ダイスは ${parityRoll}（${result === "odd" ? "奇数" : "偶数"}）！`);
+
+  if (isCorrect) {
+    addLog("予想的中！ あなたが先攻！");
+  } else {
+    addLog("予想は外れた……敵が先攻！");
+  }
+
+  addLog("先攻側から交互に行動する！");
+
+  if (firstTurn === "player") {
+    setPlayerTurn();
+  } else {
+    setEnemyTurn();
+    enemyActionPending = true;
+
+    // 敵が先攻なら自動で行動
+    rollButton.disabled = true;
+    setTimeout(() => {
+      enemyActionPending = false;
+      enemyTurn();
+    }, 700);
+  }
 }
 
-function takeTurn() {
+// ==============================
+// ターン表示
+// ==============================
+
+function setPlayerTurn() {
   if (battleFinished) return;
+
+  currentTurn = "player";
+  turnStatus.textContent = "あなたのターン！";
+  turnDescription.textContent = "ダイスを振って技を発動しよう。";
+  rollButton.textContent = "🎲 ダイスを振る";
+  rollButton.disabled = false;
+}
+
+function setEnemyTurn() {
+  if (battleFinished) return;
+
+  currentTurn = "enemy";
+  turnStatus.textContent = "敵のターン……";
+  turnDescription.textContent = "敵がダイスを振っている……";
+  rollButton.textContent = "敵の行動中……";
+  rollButton.disabled = true;
+}
+
+// ==============================
+// 技の発動処理
+// ==============================
+
+function useSkill(side, skill, roll) {
+  if (!skill) return;
+
+  const isPlayer = side === "player";
+  const actorName = isPlayer ? "あなた" : "敵";
+  const targetName = isPlayer ? "敵" : "あなた";
+
+  const oldHp = isPlayer ? playerHp : enemyHp;
+  const targetOldHp = isPlayer ? enemyHp : playerHp;
+
+  if (isPlayer) {
+    playerDie.textContent = roll;
+  } else {
+    enemyDie.textContent = roll;
+  }
+
+  addLog(`${actorName}：${roll} → ${skill.name}`);
+
+  if (skill.type === "damage") {
+    if (isPlayer) {
+      enemyHp = Math.max(0, enemyHp - skill.value);
+    } else {
+      playerHp = Math.max(0, playerHp - skill.value);
+    }
+
+    addLog(`${targetName}に ${skill.value} ダメージ！`);
+  } else {
+    if (isPlayer) {
+      playerHp = Math.min(MAX_HP, playerHp + skill.value);
+      addLog(`あなたは ${playerHp - oldHp} 回復した！`);
+    } else {
+      enemyHp = Math.min(MAX_HP, enemyHp + skill.value);
+      addLog(`敵は ${enemyHp - oldHp} 回復した！`);
+    }
+  }
+
+  updateBattleHp();
+
+  // 倒されたら後攻側は行動しない
+  if (playerHp <= 0 || enemyHp <= 0) {
+    finishBattle();
+    return;
+  }
+
+  if (isPlayer) {
+    // プレイヤーの行動後、敵が自動で行動する
+    setEnemyTurn();
+    enemyActionPending = true;
+
+    setTimeout(() => {
+      enemyActionPending = false;
+      enemyTurn();
+    }, 700);
+  } else {
+    // 敵の行動後、プレイヤーのターンへ
+    addLog("あなたのターン！");
+    setPlayerTurn();
+  }
+}
+
+// ==============================
+// プレイヤーのターン
+// ==============================
+
+function takeTurn() {
+  if (
+    battleFinished ||
+    currentTurn !== "player" ||
+    enemyActionPending
+  ) {
+    return;
+  }
+
+  const roll = rollDie();
+  const skill = getSkill(loadout[roll - 1]);
+
+  renderBattleSkillDisplay(roll - 1);
+  useSkill("player", skill, roll);
+}
+
+// ==============================
+// 敵のターン
+// ==============================
+
+function enemyTurn() {
+  if (battleFinished || currentTurn !== "enemy") {
+    return;
+  }
 
   if (playerHp <= 0 || enemyHp <= 0) {
     finishBattle();
     return;
   }
 
-  // サイコロの目は1〜6
-  const playerRoll = Math.floor(Math.random() * 6) + 1;
-  const enemyRoll = Math.floor(Math.random() * 6) + 1;
+  const roll = rollDie();
+  const skill = getSkill(enemyLoadout[roll - 1]);
 
-  const playerIndex = playerRoll - 1;
-  const enemyIndex = enemyRoll - 1;
-
-  const playerSkill = getSkill(loadout[playerIndex]);
-  const enemySkill = getSkill(enemyLoadout[enemyIndex]);
-
-  playerDie.textContent = playerRoll;
-  enemyDie.textContent = enemyRoll;
-
-  renderBattleSkillDisplay(playerIndex);
-
-  addLog(`あなた：${playerRoll} → ${playerSkill.name}`);
-  addLog(`敵：${enemyRoll} → ${enemySkill.name}`);
-
-  let playerDamage = 0;
-  let playerHeal = 0;
-  let enemyDamage = 0;
-  let enemyHeal = 0;
-
-  // プレイヤーの技効果
-  if (playerSkill.type === "damage") {
-    enemyDamage = playerSkill.value;
-  } else {
-    playerHeal = playerSkill.value;
-  }
-
-  // 敵の技効果
-  if (enemySkill.type === "damage") {
-    playerDamage = enemySkill.value;
-  } else {
-    enemyHeal = enemySkill.value;
-  }
-
-  // お互いの攻撃・回復を同時に計算
-  const playerHpAfterDamage = Math.max(0, playerHp - playerDamage);
-  const enemyHpAfterDamage = Math.max(0, enemyHp - enemyDamage);
-
-  playerHp = Math.min(MAX_HP, playerHpAfterDamage + playerHeal);
-  enemyHp = Math.min(MAX_HP, enemyHpAfterDamage + enemyHeal);
-
-  if (playerDamage > 0) {
-    addLog(`あなたは ${playerDamage} ダメージを受けた！`);
-  }
-
-  if (playerHeal > 0) {
-    const actualHeal = playerHp - playerHpAfterDamage;
-    addLog(`あなたは ${actualHeal} 回復した！`);
-  }
-
-  if (enemyDamage > 0) {
-    addLog(`敵に ${enemyDamage} ダメージ！`);
-  }
-
-  if (enemyHeal > 0) {
-    const actualHeal = enemyHp - enemyHpAfterDamage;
-    addLog(`敵は ${actualHeal} 回復した！`);
-  }
-
-  updateBattleHp();
-
-  if (playerHp <= 0 || enemyHp <= 0) {
-    finishBattle();
-  }
+  addLog("敵が行動！");
+  useSkill("enemy", skill, roll);
 }
+
+// ==============================
+// 勝敗判定
+// ==============================
 
 function finishBattle() {
   if (battleFinished) return;
 
   battleFinished = true;
+  enemyActionPending = false;
+
   rollButton.disabled = true;
+  rollButton.textContent = "バトル終了";
   backButton.classList.remove("hidden");
+
+  turnStatus.textContent = "バトル終了！";
+  turnDescription.textContent = "お疲れさま！";
 
   if (playerHp <= 0 && enemyHp <= 0) {
     addLog("引き分け！");
@@ -574,19 +688,21 @@ function finishBattle() {
 // ==============================
 
 function returnToSetup() {
-  // プレイヤー・敵ともにHPを初期化
   playerHp = MAX_HP;
   enemyHp = MAX_HP;
 
-  // 購入した技も含めて初期状態に戻す
   inventory = { ...INITIAL_COUNTS };
   loadout = [...INITIAL_LOADOUT];
   enemyLoadout = [];
 
   selectedSkillId = null;
   selectedSlotIndex = null;
+
   battleFinished = false;
   battleLogEntries = [];
+  enemyActionPending = false;
+  firstTurn = "player";
+  currentTurn = "player";
 
   battleScreen.classList.add("hidden");
   setupScreen.classList.remove("hidden");
