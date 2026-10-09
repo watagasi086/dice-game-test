@@ -8,14 +8,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="game-header">
-    <div class="version">Ver. 1.4</div>
-  </header>
-
-  <main>
-    <!-- 準備画面 -->
-    <section id="setupScreen" class="screen">
-      <div class="setup-hp">
+  <header id="gameHeader" class="game-header setup-mode">
+    <div class="header-inner">
+      <div class="version">Ver. 1.5</div>
+      <div id="setupHp" class="setup-hp">
         <div class="hp-label">
           <span>あなたの体力</span>
           <span id="setupHpText">100 / 100</span>
@@ -24,7 +20,11 @@
           <div id="setupHpBar" class="hp-fill"></div>
         </div>
       </div>
+    </div>
+  </header>
 
+  <main>
+    <section id="setupScreen" class="screen">
       <h1>🎲 ダイスバトル</h1>
       <p class="description">技を購入して、サイコロの出目に装備しよう！</p>
 
@@ -37,7 +37,7 @@
 
         <section class="panel equipment-panel">
           <h2>🎲 サイコロの装備</h2>
-          <p class="small-note">先に所持技を選んでから、装備したい枠を押してな。</p>
+          <p class="small-note">所持技を選んでから、装備したい枠を押してな。</p>
           <div id="battleSlots" class="slots"></div>
 
           <div class="owned-area">
@@ -46,21 +46,18 @@
             <div id="ownedList" class="owned-list"></div>
           </div>
 
-          <button id="startButton" class="primary-button">
-            バトル開始！
-          </button>
+          <button id="startButton" class="primary-button">バトル開始！</button>
         </section>
       </div>
     </section>
 
-    <!-- バトル画面 -->
     <section id="battleScreen" class="screen hidden">
       <h1>⚔️ バトル！</h1>
 
       <div class="battle-hp-area">
         <div class="fighter">
           <div class="fighter-name">あなた</div>
-          <div class="battle-hp-text" id="playerHpText">100 / 100 HP</div>
+          <div id="playerHpText" class="battle-hp-text">100 / 100 HP</div>
           <div class="hp-track">
             <div id="playerHpBar" class="hp-fill"></div>
           </div>
@@ -68,7 +65,7 @@
 
         <div class="fighter">
           <div class="fighter-name">相手</div>
-          <div class="battle-hp-text" id="enemyHpText">100 / 100 HP</div>
+          <div id="enemyHpText" class="battle-hp-text">100 / 100 HP</div>
           <div class="hp-track">
             <div id="enemyHpBar" class="hp-fill enemy-fill"></div>
           </div>
@@ -81,7 +78,6 @@
           <div id="playerDie" class="die">🎲</div>
           <div id="playerAction" class="action-text">準備OK！</div>
         </div>
-
         <div class="dice-card">
           <p>相手の出目</p>
           <div id="enemyDie" class="die">🎲</div>
@@ -94,18 +90,14 @@
         <div id="battleSkillDisplay" class="battle-skill-display"></div>
       </div>
 
-      <button id="rollButton" class="primary-button roll-button">
-        サイコロを振る！
-      </button>
+      <button id="rollButton" class="primary-button roll-button">サイコロを振る！</button>
 
       <div class="panel log-panel">
         <h2>📜 バトルログ</h2>
         <div id="battleLog" class="battle-log">バトル開始！サイコロを振ろう。</div>
       </div>
 
-      <button id="backButton" class="secondary-button">
-        準備画面に戻る
-      </button>
+      <button id="backButton" class="secondary-button">準備画面に戻る</button>
     </section>
   </main>
 
